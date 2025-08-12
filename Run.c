@@ -1,26 +1,26 @@
 #include "SnailShell.h"
 
-void handleInputRedirection(Command *curr, int prevPipeRead) {
+void handleInputRedirection(Command * curr, int prevPipe) {
     if (curr->input) {
-        FILE *inputFile = fopen(curr->input, "r");
-        if (!inputFile) {
+        FILE * inputFile = fopen(curr->input, "r");
+        if (inputFile == NULL) {
             fprintf(stderr, ERROR_FOPEN);
             exit(EXIT_FAILURE);
         }
         dup2(fileno(inputFile), STDIN_FILENO);
         fclose(inputFile);
     } else {
-        if (prevPipeRead != -1) {
-            dup2(prevPipeRead, STDIN_FILENO);
-            close(prevPipeRead);
+        if (prevPipe != -1) {
+            dup2(prevPipe, STDIN_FILENO);
+            close(prevPipe);
         }
     }
 }
 
-void handleOutputRedirection(Command *curr, int fd[2]) {
+void handleOutputRedirection(Command * curr, int fd[2]) {
     if (curr->output) {
-        FILE *outputFile = fopen(curr->output, curr->append ? "a" : "w");
-        if (!outputFile) {
+        FILE * outputFile = fopen(curr->output, curr->append ? "a" : "w");
+        if (outputFile == NULL) {
             fprintf(stderr, ERROR_FOPEN);
             exit(EXIT_FAILURE);
         }
@@ -35,7 +35,7 @@ void handleOutputRedirection(Command *curr, int fd[2]) {
     }
 }
 
-void handlePiping(Command *curr, int fd[2], int *prevPipeRead) {
+void handlePiping(Command * curr, int fd[2], int * prevPipe) {
     if (curr->next != NULL) {
         if (pipe(fd) == -1) {
             fprintf(stderr, ERROR_PIPE);
@@ -43,36 +43,33 @@ void handlePiping(Command *curr, int fd[2], int *prevPipeRead) {
         }
     }
 
-    if (*prevPipeRead != -1) {
-        close(*prevPipeRead);
-    }
+    if (*prevPipe != -1) 
+        close(*prevPipe);
 
-    if (curr->next != NULL) {
+    if (curr->next != NULL)
         close(fd[1]);
-    }
 
-    *prevPipeRead = fd[0];
+    *prevPipe = fd[0];
 }
 
-void handleCD(Command *curr) {
-    const char *targetDir;
+void handleCD(Command * curr) {
+    const char * targetDir;
     if (curr->argCount > 1) 
-        targetDir = curr->args[1];
+        targetDir = curr->args[curr->argCount - 1];
     else 
         targetDir = getenv("HOME");
         
-    if (targetDir == NULL || chdir(targetDir) == -1) {
+    if (targetDir == NULL || chdir(targetDir) == -1)
         fprintf(stderr, ERROR_CD);
-    }
 }
 
-void executeCommands(Command *commands) {
-    Command *curr = commands;
+void execute(Command * commands) {
+    Command * curr = commands;
     int fd[2];
-    int prevPipeRead = -1;
+    int prevPipe = -1;
 
     while (curr != NULL) {
-        if (strcmp(curr->args[0], "cd") == 0) {
+        if (strcmp(*curr->args, "cd") == 0) {
             handleCD(curr);
             curr = curr->next;
             continue;
@@ -80,14 +77,13 @@ void executeCommands(Command *commands) {
 
         pid_t pid = fork();
         if (pid == 0) {
-            handleInputRedirection(curr, prevPipeRead);
+            handleInputRedirection(curr, prevPipe);
             handleOutputRedirection(curr, fd);
-
-            execvp(curr->args[0], curr->args);
+            execvp(*curr->args, curr->args);
             fprintf(stderr, ERROR_EXECVP);
             exit(EXIT_FAILURE);
         } else if (pid > 0) {
-            handlePiping(curr, fd, &prevPipeRead);
+            handlePiping(curr, fd, &prevPipe);
 
             int status;
             waitpid(pid, &status, 0);
@@ -99,25 +95,23 @@ void executeCommands(Command *commands) {
         curr = curr->next;
     }
 
-    if (prevPipeRead != -1)
-        close(prevPipeRead);
-}
+    if (prevPipe != -1)
+        close(prevPipe);
 
-void freeCommands(Command *commands) {
-    Command *curr = commands;
-    while (curr != NULL) {
-        Command *next = curr->next;
+    Command * dirty = commands;
+    while (dirty != NULL) {
+        Command * next = dirty->next;
 
-        for (int i = 0; i < curr->argCount; i++)
-            free(curr->args[i]);
+        for (int i = 0; i < dirty->argCount; i++)
+            free(dirty->args[i]);
 
-        if (curr->input)
-            free(curr->input);
-        if (curr->output)
-            free(curr->output);
+        if (dirty->input)
+            free(dirty->input);
+        if (dirty->output)
+            free(dirty->output);
 
-        free(curr);
-        curr = next;
+        free(dirty);
+        dirty = next;
     }
 }
 
@@ -130,9 +124,9 @@ void printPrompt() {
     printf("%s > ", cwd);
 }
 
-int run(FILE *inputStream) {
-    char *currLine = NULL;
-    size_t len = 0;
+int run(FILE * inputStream) {
+    char * currLine = NULL;
+    size_t capacity = 0;
 
     if (inputStream == stdin)
         printf("Welcome to SnailShell!\n");
@@ -141,17 +135,15 @@ int run(FILE *inputStream) {
         if (inputStream == stdin)
             printPrompt();
 
-        if (getline(&currLine, &len, inputStream) == -1)
+        if (getline(&currLine, &capacity, inputStream) == -1)
             break;
 
         int end = strcspn(currLine, "\n");
         currLine[end] = '\0';
-        Command *commands = parse(currLine);
+        Command * commands = parse(currLine);
 
-        if (commands) {
-            executeCommands(commands);
-            freeCommands(commands);
-        }
+        if (commands)
+            execute(commands);
     }
 
     free(currLine);

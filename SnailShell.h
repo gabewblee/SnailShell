@@ -26,12 +26,12 @@
 #define ERROR_MALLOC "Error: malloc failed.\n"
 #define ERROR_SETENV "Error: setenv failed.\n"
 #define ERROR_FOPEN "Error: fopen failed.\n"
+#define ERROR_FCLOSE "Error: fclose failed.\n"
 
 // Other Errors
 #define ERROR_CD "Error: cd failed.\n"
 #define ERROR_ARGS_MISSING "Error: missing init file path after argument '-i'.\n"
 #define ERROR_ARGS_UNKNOWN "Error: unknown argument %s\n"
-#define ERROR_INIT_OPEN "Error: could not open init file %s\n"
 #define ERROR_INVALID_VAR_NAME "Error: invalid variable name '%s'.\n"
 
 typedef struct Command {
@@ -45,7 +45,6 @@ typedef struct Command {
 
 // SnailShell.c definitions
 void printHelp();
-void printPrompt();
 
 // Parse.c definitions
 int isValidVariableName(const char *name);
@@ -55,12 +54,12 @@ void substitute(Command *command);
 Command *parse(const char *currLine);
 
 // Run.c definitions
-void handleInputRedirection(Command *curr, int prevPipeRead);
+void handleInputRedirection(Command *curr, int prevPipe);
 void handleOutputRedirection(Command *curr, int fd[2]);
-void handlePiping(Command *curr, int fd[2], int *prevPipeRead);
+void handlePiping(Command *curr, int fd[2], int *prevPipe);
 void handleCD(Command *curr);
-void executeCommands(Command *commands);
-void freeCommands(Command *cmd);
+void execute(Command *commands);
+void printPrompt();
 int run(FILE *inputStream);
 
 #endif

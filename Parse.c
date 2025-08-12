@@ -1,6 +1,6 @@
 #include "SnailShell.h"
 
-int isValidVariableName(const char *name) {
+int isValidVariableName(const char * name) {
     for (int i = 0; name[i] != '\0'; i++) {
         if (!isalpha(name[i]) && name[i] != '_')
             return -1;
@@ -8,10 +8,20 @@ int isValidVariableName(const char *name) {
     return 0;
 }
 
-int handleVariableAssignment(const char *currLine, char *equalSign) {
+int handleVariableAssignment(const char * currLine, char * equalSign) {
     size_t nameLength = equalSign - currLine;
-    char *name = strndup(currLine, nameLength);
-    char *value = strdup(equalSign + 1);
+    char * name = strndup(currLine, nameLength);
+    if (name == NULL) {
+        fprintf(stderr, ERROR_MALLOC);
+        exit(EXIT_FAILURE);
+    }
+
+    char * value = strdup(equalSign + 1);
+    if (value == NULL) {
+        fprintf(stderr, ERROR_MALLOC);
+        free(name);
+        exit(EXIT_FAILURE);
+    }
 
     if (isValidVariableName(name) == -1) {
         fprintf(stderr, ERROR_INVALID_VAR_NAME, name);
@@ -32,51 +42,61 @@ int handleVariableAssignment(const char *currLine, char *equalSign) {
     return 0;
 }
 
-char *replace(const char *arg) {
-    if (arg == NULL || arg[0] != '$')
-        return strdup(arg);
+char * replace(const char * arg) {
+    char * newArg = NULL;
+    if (arg == NULL || *arg != '$')
+        newArg = strdup(arg);
+        if (newArg == NULL) {
+            fprintf(stderr, ERROR_MALLOC);
+            exit(EXIT_FAILURE);
+        }
+        return newArg;
 
-    const char *varName = arg + 1;
-    const char *value = getenv(varName);
+    const char * varName = arg + 1;
+    const char * value = getenv(varName);
     if (value == NULL)
         value = "";
 
-    char *result = strdup(value);
-    return result;
+    newArg = strdup(value);
+    if (newArg == NULL) {
+        fprintf(stderr, ERROR_MALLOC);
+        exit(EXIT_FAILURE);
+    }
+    return newArg;
 }
 
-void substitute(Command *command) {
+void substitute(Command * command) {
     for (int i = 0; i < command->argCount; i++) {
-        char *newArg = replace(command->args[i]);
+        char * newArg = replace(command->args[i]);
         free(command->args[i]);
         command->args[i] = newArg;
     }
 }
 
-Command *parse(const char *currLine) {
+Command * parse(const char * currLine) {
     if (currLine == NULL || strlen(currLine) == 0)
         return NULL;
 
-    char *equalSign = strchr(currLine, '=');
+    char * equalSign = strchr(currLine, '=');
     if (equalSign) {
         handleVariableAssignment(currLine, equalSign);
         return NULL;
     }
 
-    char *lineCopy = strdup(currLine);
-    if (!lineCopy) {
+    char * lineCopy = strdup(currLine);
+    if (lineCopy == NULL) {
         fprintf(stderr, ERROR_MALLOC);
         exit(EXIT_FAILURE);
     }
 
-    Command *head = NULL;
-    Command *curr = NULL;
+    Command * head = NULL;
+    Command * curr = NULL;
 
-    char *tokenPtr;
-    char *token = strtok_r(lineCopy, "|", &tokenPtr);
+    char * tokenPtr;
+    char * token = strtok_r(lineCopy, "|", &tokenPtr);
     while (token != NULL) {
-        Command *command = malloc(sizeof(Command));
-        if (!command) {
+        Command * command = malloc(sizeof(Command));
+        if (command == NULL) {
             fprintf(stderr, ERROR_MALLOC);
             exit(EXIT_FAILURE);
         }
@@ -91,8 +111,8 @@ Command *parse(const char *currLine) {
 
         curr = command;
 
-        char *subtokenPtr;
-        char *subtoken = strtok_r(token, " \t", &subtokenPtr);
+        char * subtokenPtr;
+        char * subtoken = strtok_r(token, " \t", &subtokenPtr);
         while (subtoken != NULL) {
             if (strcmp(subtoken, ">") == 0) {
                 subtoken = strtok_r(NULL, " \t", &subtokenPtr);

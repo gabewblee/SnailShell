@@ -8,11 +8,11 @@ void printHelp() {
     printf("    -i <file>, --init-file=<file>           Specify an init file\n");
 }
 
-int main(int argc, char *argv[]) {
-    const char *initPath = NULL;
+int main(int argc, char * argv[]) {
+    const char * initPath = NULL;
 
     for (int i = 1; i < argc; i++) {
-        const char *arg = argv[i];
+        const char * arg = argv[i];
         if (strcmp(arg, "-h") == 0 || strcmp(arg, ARG_HELP) == 0) {
             printHelp();
             return 0;
@@ -32,14 +32,17 @@ int main(int argc, char *argv[]) {
     }
 
     if (initPath) {
-        FILE *initFile = fopen(initPath, "r");
+        FILE * initFile = fopen(initPath, "r");
         if (initFile == NULL) {
-            fprintf(stderr, ERROR_INIT_OPEN, initPath);
-            exit(EXIT_FAILURE);
+            fprintf(stderr, ERROR_FOPEN);
+            return -1;
         }
 
         int ret = run(initFile);
-        fclose(initFile);
+        if (fclose(initFile) != 0) {
+            fprintf(stderr, ERROR_FCLOSE);
+            return -1;
+        }
         return ret;
     } else {
         return run(stdin);

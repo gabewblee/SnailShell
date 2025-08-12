@@ -19,7 +19,7 @@ Currently, it supports the following features:
 
 1. Clone the repository:
 ```
-git clone https://github.com/yourusername/SnailShell.git
+git clone https://github.com/gabewblee/SnailShell.git
 ```
 2. Compile the program:
 ```

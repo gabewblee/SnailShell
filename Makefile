@@ -3,7 +3,7 @@ CFLAGS += -Wall -std=gnu99
 DEBUG_CFLAGS := -DDEBUG -g
 
 TARGET := SnailShell
-SRCS := SnailShell.c parse.c run.c
+SRCS := SnailShell.c Parse.c Run.c
 OBJS := $(SRCS:.c=.o)
 
 all: $(TARGET)

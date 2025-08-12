@@ -9,9 +9,11 @@ void handleInputRedirection(Command *curr, int prevPipeRead) {
         }
         dup2(fileno(inputFile), STDIN_FILENO);
         fclose(inputFile);
-    } else if (prevPipeRead != -1) {
-        dup2(prevPipeRead, STDIN_FILENO);
-        close(prevPipeRead);
+    } else {
+        if (prevPipeRead != -1) {
+            dup2(prevPipeRead, STDIN_FILENO);
+            close(prevPipeRead);
+        }
     }
 }
 
@@ -24,10 +26,12 @@ void handleOutputRedirection(Command *curr, int fd[2]) {
         }
         dup2(fileno(outputFile), STDOUT_FILENO);
         fclose(outputFile);
-    } else if (curr->next != NULL) {
-        dup2(fd[1], STDOUT_FILENO);
-        close(fd[0]);
-        close(fd[1]);
+    } else {
+        if (curr->next != NULL) {
+            dup2(fd[1], STDOUT_FILENO);
+            close(fd[0]);
+            close(fd[1]);
+        }
     }
 }
 

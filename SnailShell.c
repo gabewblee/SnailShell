@@ -16,8 +16,7 @@ int main(int argc, char * argv[]) {
         if (strcmp(arg, "-h") == 0 || strcmp(arg, ARG_HELP) == 0) {
             printHelp();
             return 0;
-        }
-        else if (strcmp(arg, "-i") == 0) {
+        } else if (strcmp(arg, "-i") == 0) {
             if (i + 1 >= argc) {
                 fprintf(stderr, ERROR_ARGS_MISSING);
                 return -1;
@@ -34,15 +33,16 @@ int main(int argc, char * argv[]) {
     if (initPath) {
         FILE * initFile = fopen(initPath, "r");
         if (initFile == NULL) {
-            fprintf(stderr, ERROR_FOPEN);
+            perror("fopen");
             return -1;
         }
 
         int ret = run(initFile);
         if (fclose(initFile) != 0) {
-            fprintf(stderr, ERROR_FCLOSE);
+            perror("fclose");
             return -1;
         }
+        
         return ret;
     } else {
         return run(stdin);

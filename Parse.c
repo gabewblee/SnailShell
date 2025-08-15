@@ -1,10 +1,9 @@
 #include "SnailShell.h"
 
 int isValidVariableName(const char * name) {
-    for (int i = 0; name[i] != '\0'; i++) {
-        if (!isalpha(name[i]) && name[i] != '_')
-            return -1;
-    }
+    for (int i = 0; name[i] != '\0'; i++) 
+        if (!isalpha(name[i]) && name[i] != '_') return -1;
+        
     return 0;
 }
 
@@ -12,13 +11,13 @@ int handleVariableAssignment(const char * currLine, char * equalSign) {
     size_t nameLength = equalSign - currLine;
     char * name = strndup(currLine, nameLength);
     if (name == NULL) {
-        fprintf(stderr, ERROR_MALLOC);
+        perror("strndup");
         exit(EXIT_FAILURE);
     }
 
     char * value = strdup(equalSign + 1);
     if (value == NULL) {
-        fprintf(stderr, ERROR_MALLOC);
+        perror("strdup");
         free(name);
         exit(EXIT_FAILURE);
     }
@@ -31,7 +30,7 @@ int handleVariableAssignment(const char * currLine, char * equalSign) {
     }
 
     if (setenv(name, value, 1) == -1) {
-        fprintf(stderr, ERROR_SETENV);
+        perror("setenv");
         free(name);
         free(value);
         return -1;
@@ -44,22 +43,22 @@ int handleVariableAssignment(const char * currLine, char * equalSign) {
 
 char * replace(const char * arg) {
     char * newArg = NULL;
-    if (arg == NULL || *arg != '$')
+    if (arg == NULL || *arg != '$') {
         newArg = strdup(arg);
         if (newArg == NULL) {
-            fprintf(stderr, ERROR_MALLOC);
+            perror("strdup");
             exit(EXIT_FAILURE);
         }
         return newArg;
+    }
 
     const char * varName = arg + 1;
     const char * value = getenv(varName);
-    if (value == NULL)
-        value = "";
+    if (value == NULL) value = "";
 
     newArg = strdup(value);
     if (newArg == NULL) {
-        fprintf(stderr, ERROR_MALLOC);
+        perror("strdup");
         exit(EXIT_FAILURE);
     }
     return newArg;
@@ -74,8 +73,7 @@ void substitute(Command * command) {
 }
 
 Command * parse(const char * currLine) {
-    if (currLine == NULL || strlen(currLine) == 0)
-        return NULL;
+    if (currLine == NULL || strlen(currLine) == 0) return NULL;
 
     char * equalSign = strchr(currLine, '=');
     if (equalSign) {
@@ -85,7 +83,7 @@ Command * parse(const char * currLine) {
 
     char * lineCopy = strdup(currLine);
     if (lineCopy == NULL) {
-        fprintf(stderr, ERROR_MALLOC);
+        perror("strdup");
         exit(EXIT_FAILURE);
     }
 
@@ -97,17 +95,15 @@ Command * parse(const char * currLine) {
     while (token != NULL) {
         Command * command = malloc(sizeof(Command));
         if (command == NULL) {
-            fprintf(stderr, ERROR_MALLOC);
+            perror("malloc");
             exit(EXIT_FAILURE);
         }
 
         memset(command, 0, sizeof(Command));
         command->argCount = 0;
 
-        if (head == NULL)
-            head = command;
-        else
-            curr->next = command;
+        if (head == NULL) head = command;
+        else curr->next = command;
 
         curr = command;
 
@@ -117,16 +113,33 @@ Command * parse(const char * currLine) {
             if (strcmp(subtoken, ">") == 0) {
                 subtoken = strtok_r(NULL, " \t", &subtokenPtr);
                 command->output = strdup(subtoken);
+                if (command->output == NULL) {
+                    perror("strdup");
+                    exit(EXIT_FAILURE);
+                }
                 command->append = 0;
             } else if (strcmp(subtoken, ">>") == 0) {
                 subtoken = strtok_r(NULL, " \t", &subtokenPtr);
                 command->output = strdup(subtoken);
+                if (command->output == NULL) {
+                    perror("strdup");
+                    exit(EXIT_FAILURE);
+                }
                 command->append = 1;
             } else if (strcmp(subtoken, "<") == 0) {
                 subtoken = strtok_r(NULL, " \t", &subtokenPtr);
                 command->input = strdup(subtoken);
+                if (command->input == NULL) {
+                    perror("strdup");
+                    exit(EXIT_FAILURE);
+                }
             } else {
-                command->args[command->argCount++] = strdup(subtoken);
+                command->args[command->argCount] = strdup(subtoken);
+                if (command->args[command->argCount] == NULL) {
+                    perror("strdup");
+                    exit(EXIT_FAILURE);
+                }
+                command->argCount++;
             }
             subtoken = strtok_r(NULL, " \t", &subtokenPtr);
         }

@@ -62,18 +62,24 @@ char * replace(const char * arg) {
 }
 
 void substitute(Command * command) {
-    for (int i = 0; i < command->argCount; i++) {
-        char * newArg = replace(command->args[i]);
-        free(command->args[i]);
-        command->args[i] = newArg;
+    if (command != NULL) {
+        for (int i = 0; i < command->argCount; i++) {
+            char * newArg = replace(command->args[i]);
+            if (command->args[i] != NULL) {
+                free(command->args[i]);
+            }
+            command->args[i] = newArg;
+        }
     }
 }
 
 Command * parse(const char * currLine) {
-    if (currLine == NULL || strlen(currLine) == 0) return NULL;
+    if (currLine == NULL || strlen(currLine) == 0) {
+        return NULL;
+    }
 
     char * equalSign = strchr(currLine, '=');
-    if (equalSign) {
+    if (equalSign != NULL) {
         if (handleVariableAssignment(currLine, equalSign) == -1) {
             fprintf(stderr, "Failed to handle variable assignment\n");
         }
@@ -114,26 +120,32 @@ Command * parse(const char * currLine) {
         while (subtoken != NULL) {
             if (strcmp(subtoken, ">") == 0) {
                 subtoken = strtok_r(NULL, " \t", &subtokenPtr);
-                command->output = strdup(subtoken);
-                if (command->output == NULL) {
-                    perror("strdup");
-                    exit(EXIT_FAILURE);
+                if (subtoken != NULL) {
+                    command->output = strdup(subtoken);
+                    if (command->output == NULL) {
+                        perror("strdup");
+                        exit(EXIT_FAILURE);
+                    }
+                    command->append = 0;
                 }
-                command->append = 0;
             } else if (strcmp(subtoken, ">>") == 0) {
                 subtoken = strtok_r(NULL, " \t", &subtokenPtr);
-                command->output = strdup(subtoken);
-                if (command->output == NULL) {
-                    perror("strdup");
-                    exit(EXIT_FAILURE);
+                if (subtoken != NULL) {
+                    command->output = strdup(subtoken);
+                    if (command->output == NULL) {
+                        perror("strdup");
+                        exit(EXIT_FAILURE);
+                    }
+                    command->append = 1;
                 }
-                command->append = 1;
             } else if (strcmp(subtoken, "<") == 0) {
                 subtoken = strtok_r(NULL, " \t", &subtokenPtr);
-                command->input = strdup(subtoken);
-                if (command->input == NULL) {
-                    perror("strdup");
-                    exit(EXIT_FAILURE);
+                if (subtoken != NULL) {
+                    command->input = strdup(subtoken);
+                    if (command->input == NULL) {
+                        perror("strdup");
+                        exit(EXIT_FAILURE);
+                    }
                 }
             } else {
                 command->args[command->argCount] = strdup(subtoken);

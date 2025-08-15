@@ -5,7 +5,7 @@ void printHelp() {
     printf("Usage: SnailShell [OPTIONS]\n");
     printf("Options:\n");
     printf("    -h, --help                              Show this help message\n");
-    printf("    -i <file>, --script=<file>              Specify an script file\n");
+    printf("    -s <file>, --script=<file>              Specify an script file\n");
 }
 
 int main(int argc, char * argv[]) {
@@ -16,7 +16,7 @@ int main(int argc, char * argv[]) {
         if (strcmp(arg, "-h") == 0 || strcmp(arg, ARG_HELP) == 0) {
             printHelp();
             return 0;
-        } else if (strcmp(arg, "-i") == 0) {
+        } else if (strcmp(arg, "-s") == 0) {
             if (i + 1 >= argc) {
                 fprintf(stderr, ERROR_ARG_MISSING);
                 return -1;

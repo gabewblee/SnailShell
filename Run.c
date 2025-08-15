@@ -88,11 +88,9 @@ void handleOutputRedirection(Command * curr, int fd[2]) {
 }
 
 void handlePiping(Command * curr, int fd[2], int * prevPipe) {
-    if (curr->next != NULL) {
-        if (pipe(fd) == -1) {
-            perror("pipe");
-            exit(EXIT_FAILURE);
-        }
+    if (curr->next != NULL && pipe(fd) == -1) {
+        perror("pipe");
+        exit(EXIT_FAILURE);
     }
 
     safeClose(*prevPipe);

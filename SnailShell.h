@@ -16,37 +16,39 @@
 #define ARG_HELP "--help"
 #define ARG_INIT "--init-file="
 
+// Max values
+#define MAX_NUM_ARGS 128
+
 // Error messages
-#define ERROR_ARGS_MISSING "Error: missing init file path after argument '-i'.\n"
-#define ERROR_ARGS_UNKNOWN "Error: unknown argument %s\n"
-#define ERROR_INVALID_VAR_NAME "Error: invalid variable name '%s'.\n"
+#define ERROR_ARG_MISSING "Error: missing init file path after argument '-i'.\n"
+#define ERROR_ARG_UNKNOWN "Error: unknown argument %s\n"
+#define ERROR_VAR_INVALID "Error: invalid variable name '%s'.\n"
 
 typedef struct Command {
-    char *args[128];
+    char * args[MAX_NUM_ARGS];
     int argCount;
-    char *input;
-    char *output;
+    char * input;
+    char * output;
     int append;
-    struct Command *next;
+    struct Command * next;
 } Command;
 
 // SnailShell.c definitions
 void printHelp();
 
 // Parse.c definitions
-int isValidVariableName(const char *name);
-int handleVariableAssignment(const char *currLine, char *equalSign);
-char *replace(const char *arg);
-void substitute(Command *command);
-Command *parse(const char *currLine);
+int handleVariableAssignment(const char * currLine, char * equalSign);
+char * replace(const char * arg);
+void substitute(Command * command);
+Command * parse(const char * currLine);
 
 // Run.c definitions
-int handleCD(Command *curr);
-void handleInputRedirection(Command *curr, int prevPipe);
-void handleOutputRedirection(Command *curr, int fd[2]);
-void handlePiping(Command *curr, int fd[2], int *prevPipe);
+int handleCD(Command * curr);
+void handleInputRedirection(Command * curr, int prevPipe);
+void handleOutputRedirection(Command * curr, int fd[2]);
+void handlePiping(Command * curr, int fd[2], int * prevPipe);
 void printPrompt();
-void execute(Command *commands);
-int run(FILE *inputStream);
+void execute(Command * commands);
+int run(FILE * inputStream);
 
 #endif

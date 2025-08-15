@@ -18,14 +18,14 @@ int main(int argc, char * argv[]) {
             return 0;
         } else if (strcmp(arg, "-i") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, ERROR_ARGS_MISSING);
+                fprintf(stderr, ERROR_ARG_MISSING);
                 return -1;
             }
             initPath = argv[++i];
         } else if (strncmp(arg, ARG_INIT, strlen(ARG_INIT)) == 0) {
             initPath = arg + strlen(ARG_INIT);
         } else {
-            fprintf(stderr, ERROR_ARGS_UNKNOWN, arg);
+            fprintf(stderr, ERROR_ARG_UNKNOWN, arg);
             return -1;
         }
     }

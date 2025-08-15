@@ -1,12 +1,5 @@
 #include "SnailShell.h"
 
-int isValidVariableName(const char * name) {
-    for (int i = 0; name[i] != '\0'; i++) 
-        if (!isalpha(name[i]) && name[i] != '_') return -1;
-        
-    return 0;
-}
-
 int handleVariableAssignment(const char * currLine, char * equalSign) {
     size_t nameLength = equalSign - currLine;
     char * name = strndup(currLine, nameLength);
@@ -22,11 +15,13 @@ int handleVariableAssignment(const char * currLine, char * equalSign) {
         exit(EXIT_FAILURE);
     }
 
-    if (isValidVariableName(name) == -1) {
-        fprintf(stderr, ERROR_INVALID_VAR_NAME, name);
-        free(name);
-        free(value);
-        return -1;
+    for (int i = 0; name[i] != '\0'; i++) {
+        if (!isalpha(name[i]) && name[i] != '_') {
+            fprintf(stderr, ERROR_VAR_INVALID, name);
+            free(name);
+            free(value);
+            return -1;
+        }
     }
 
     if (setenv(name, value, 1) == -1) {
@@ -54,7 +49,9 @@ char * replace(const char * arg) {
 
     const char * varName = arg + 1;
     const char * value = getenv(varName);
-    if (value == NULL) value = "";
+    if (value == NULL) {
+        value = "";
+    }
 
     newArg = strdup(value);
     if (newArg == NULL) {
@@ -77,7 +74,9 @@ Command * parse(const char * currLine) {
 
     char * equalSign = strchr(currLine, '=');
     if (equalSign) {
-        handleVariableAssignment(currLine, equalSign);
+        if (handleVariableAssignment(currLine, equalSign) == -1) {
+            fprintf(stderr, "Failed to handle variable assignment\n");
+        }
         return NULL;
     }
 
@@ -102,8 +101,11 @@ Command * parse(const char * currLine) {
         memset(command, 0, sizeof(Command));
         command->argCount = 0;
 
-        if (head == NULL) head = command;
-        else curr->next = command;
+        if (head == NULL) {
+            head = command;
+        } else {
+            curr->next = command;
+        }
 
         curr = command;
 

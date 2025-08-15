@@ -14,7 +14,7 @@
 
 // Arguments
 #define ARG_HELP "--help"
-#define ARG_INIT "--init-file="
+#define ARG_SCRIPT "--script="
 
 // Max values
 #define MAX_NUM_ARGS 128

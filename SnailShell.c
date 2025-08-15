@@ -5,11 +5,11 @@ void printHelp() {
     printf("Usage: SnailShell [OPTIONS]\n");
     printf("Options:\n");
     printf("    -h, --help                              Show this help message\n");
-    printf("    -i <file>, --init-file=<file>           Specify an init file\n");
+    printf("    -i <file>, --script=<file>              Specify an script file\n");
 }
 
 int main(int argc, char * argv[]) {
-    const char * initPath = NULL;
+    const char * scriptPath = NULL;
 
     for (int i = 1; i < argc; i++) {
         const char * arg = argv[i];
@@ -21,24 +21,24 @@ int main(int argc, char * argv[]) {
                 fprintf(stderr, ERROR_ARG_MISSING);
                 return -1;
             }
-            initPath = argv[++i];
-        } else if (strncmp(arg, ARG_INIT, strlen(ARG_INIT)) == 0) {
-            initPath = arg + strlen(ARG_INIT);
+            scriptPath = argv[++i];
+        } else if (strncmp(arg, ARG_SCRIPT, strlen(ARG_SCRIPT)) == 0) {
+            scriptPath = arg + strlen(ARG_SCRIPT);
         } else {
             fprintf(stderr, ERROR_ARG_UNKNOWN, arg);
             return -1;
         }
     }
 
-    if (initPath) {
-        FILE * initFile = fopen(initPath, "r");
-        if (initFile == NULL) {
+    if (scriptPath) {
+        FILE * scriptFile = fopen(scriptPath, "r");
+        if (scriptFile == NULL) {
             perror("fopen");
             return -1;
         }
 
-        int ret = run(initFile);
-        if (fclose(initFile) != 0) {
+        int ret = run(scriptFile);
+        if (fclose(scriptFile) != 0) {
             perror("fclose");
             return -1;
         }

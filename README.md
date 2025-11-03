@@ -46,9 +46,9 @@ Or alternatively,
 ```
 3. **Script Mode:** Runs a pre-defined script.
 ```
-./SnailShell -s [File]
+./SnailShell -s /path/to/your/file
 ```
 Or alternatively,
 ```
-./SnailShell --script=[File]
+./SnailShell --script=/path/to/your/file
 ```
